@@ -1,5 +1,11 @@
+[B]1.1.5[/B]
+- Added spoofed UA for live streams
+
+[B]1.1.4[/B]
+- Code cosmetics
+
 [B]1.1.3[/B]
-- Minor fix on live resolver
+- Minor regex fix on live resolver
 - Code cosmetics
 
 [B]1.1.2[/B]
