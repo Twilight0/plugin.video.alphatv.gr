@@ -418,7 +418,10 @@ class indexer:
             link = re.findall('strlist = .+?"(.+?)"', result)[0]
             constructed = urlparse.urljoin(self.base_link, self.st_link + urllib.quote_plus(link))
             json_obj = client.request(constructed)
-            link = json.loads(json_obj)['o0']
+            link = [i for i in json.loads(json_obj).values() if i.startswith('http') and not 'mpd' in i][0]
+            if not link:
+                link = [i for i in json.loads(json_obj).values() if i.startswith('rtmp')][0]
+            # link = json.loads(json_obj)['o0']
             return link
 
         except:

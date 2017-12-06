@@ -1,3 +1,6 @@
+[B]1.2.1[/B]
+- Fixed resolver to always choose HLS stream and fallback to rtmp
+
 [B]1.2.0[/B]
 - Added Hebrew translation (Eng2Heb@github)
 - Added new try-except block into vod resolver due to new website api
