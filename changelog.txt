@@ -1,3 +1,8 @@
+[B]2.0.0[/B]
+- Rework of the addon, new indexers, new stream resolver
+- Replaced item based selection of country with a selector to switch between regions
+- Bumped dependencies
+
 [B]1.2.1[/B]
 - Fixed resolver to always choose HLS stream and fallback to rtmp
 

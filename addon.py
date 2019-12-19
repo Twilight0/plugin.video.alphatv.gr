@@ -16,20 +16,22 @@
 '''
 
 
-import urlparse,sys
-
+import sys
+from tulip.compat import parse_qsl
 from resources.lib import alphatv
 
 
-params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
+params = dict(parse_qsl(sys.argv[2].replace('?','')))
 
 action = params.get('action')
-
 url = params.get('url')
+title = params.get('title')
+image = params.get('image')
+query = params.get('query')
 
 
 if action is None:
-    alphatv.indexer().root()
+    alphatv.Indexer().root()
 
 elif action == 'addBookmark':
     from tulip import bookmarks
@@ -39,40 +41,34 @@ elif action == 'deleteBookmark':
     from tulip import bookmarks
     bookmarks.delete(url)
 
-elif action == 'channels':
-    alphatv.indexer().channels()
+elif action == 'recent':
+    alphatv.Indexer().recent()
 
 elif action == 'bookmarks':
-    alphatv.indexer().bookmarks()
+    alphatv.Indexer().bookmarks()
 
-elif action == 'tvshows':
-    alphatv.indexer().tvshows(url)
-
-elif action == 'archive':
-    alphatv.indexer().archive(url)
-
-elif action == 'episodes':
-    alphatv.indexer().episodes(url)
-
-elif action == 'reverseEpisodes':
-    alphatv.indexer().episodes(url, reverse=True)
-
-elif action == 'popularShows':
-    alphatv.indexer().popularShows()
-
-elif action == 'popularEpisodes':
-    alphatv.indexer().popularEpisodes()
+elif action == 'index':
+    alphatv.Indexer().index(url)
 
 elif action == 'news':
-    alphatv.indexer().news()
+    alphatv.Indexer().news(url)
 
-elif action == 'cynews':
-    alphatv.indexer().cynews()
+elif action == 'episodes':
+    alphatv.Indexer().episodes(url, title, image)
 
-elif action == 'live':
-    alphatv.indexer().live(url)
+elif action == 'news_episodes':
+    alphatv.Indexer().news_episodes(query)
 
 elif action == 'play':
-    alphatv.indexer().play(url)
+    alphatv.Indexer().play(url)
 
+elif action == 'cache_clear':
+    from tulip.cache import clear
+    clear(withyes=False)
 
+elif action == 'selector':
+    alphatv.Indexer().selector()
+
+elif action == 'back':
+    from tulip.control import execute
+    execute('Action(Back)')

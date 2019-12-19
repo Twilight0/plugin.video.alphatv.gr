@@ -7,49 +7,72 @@
 msgid ""
 msgstr ""
 
+msgctxt "#30402"
+msgid "Success"
+msgstr ""
 
 msgctxt "#32001"
 msgid "Live"
 msgstr ""
 
 msgctxt "#32002"
-msgid "Shows"
+msgid "Series"
 msgstr ""
 
 msgctxt "#32003"
-msgid "Shows (CY)"
+msgid "Country: {0}"
 msgstr ""
 
 msgctxt "#32004"
-msgid "Archive"
+msgid "Greece"
 msgstr ""
 
 msgctxt "#32005"
-msgid "Latest Shows"
+msgid "Cyprus"
 msgstr ""
 
 msgctxt "#32006"
-msgid "Latest Episodes"
+msgid "Actions"
 msgstr ""
 
 msgctxt "#32007"
-msgid "News (GR)"
+msgid "Change country"
 msgstr ""
 
 msgctxt "#32008"
-msgid "News (CY)"
+msgid "Shows"
 msgstr ""
 
 msgctxt "#32009"
 msgid "Bookmarks"
 msgstr ""
 
+msgctxt "#32010"
+msgid "Recent"
+msgstr ""
+
+msgctxt "#32011"
+msgid "News"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Web TV"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Go back"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Episodes not found"
+msgstr ""
+
 msgctxt "#32021"
-msgid "ALPHA"
+msgid ""
 msgstr ""
 
 msgctxt "#32022"
-msgid "ALPHA CYPRUS"
+msgid "Clear function cache"
 msgstr ""
 
 msgctxt "#32500"
