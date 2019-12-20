@@ -367,6 +367,8 @@ class Indexer:
 
                 if 'kentrikodeltio' in url:
                     view_args = view_args.replace('shows', 'news')
+                elif 'ellinikes-seires' in url:
+                    view_args = view_args.replace('shows', 'episodes')
 
                 threads = []
 

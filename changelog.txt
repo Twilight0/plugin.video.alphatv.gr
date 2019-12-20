@@ -1,3 +1,6 @@
+[B]2.0.1[/B]
+- Minor fix for cypriot episode indexers
+
 [B]2.0.0[/B]
 - Rework of the addon, new indexers, new stream resolver
 - Replaced item based selection of country with a selector to switch between regions
