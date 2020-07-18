@@ -1,3 +1,9 @@
+[B]2.1.0[/B]
+- Update youtube api key
+- Update indexers
+- Update resolvers
+- Add input date prompt for past webtv news on cypriot indexer
+
 [B]2.0.1[/B]
 - Minor fix for cypriot episode indexers
 

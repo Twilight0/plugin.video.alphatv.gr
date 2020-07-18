@@ -1,11 +1,18 @@
-# Kodi Media Center language file
-# Addon Name: ALPHA Player
+# Addon Name: Alpha Player
 # Addon id: plugin.video.alphatv.gr
-# Addon version: 1.0.0
-# Addon Provider: lambda
-
+# Addon Provider: Twilight0
 msgid ""
 msgstr ""
+"Project-Id-Version: Alpha Player\n"
+"POT-Creation-Date: 2016-06-22 11:29+0000\n"
+"PO-Revision-Date: 2020-07-16 11:29+0000\n"
+"Last-Translator: twilight0\n"
+"Language-Team: Greek (https://www.alivegr.net)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: el\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30402"
 msgid "Success"
@@ -67,9 +74,17 @@ msgctxt "#32014"
 msgid "Episodes not found"
 msgstr "Τα επεισόδια δεν βρέθηκαν"
 
+msgctxt "#32015"
+msgid "Informative shows"
+msgstr "Ενημερωτικές εκπομπές"
+
+msgctxt "#32016"
+msgid "Entertainment shows"
+msgstr "Ψυχαγωγικές εκπομπές"
+
 msgctxt "#32021"
-msgid ""
-msgstr ""
+msgid "Enter date"
+msgstr "Εισάγετε ημερομηνία"
 
 msgctxt "#32022"
 msgid "Clear function cache"

@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
 
 '''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    Alpha Player Addon
+    Author Twilight0
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    SPDX-License-Identifier: GPL-3.0-only
+    See LICENSES/GPL-3.0-only for more information.
 '''
 
 
@@ -26,6 +19,7 @@ params = dict(parse_qsl(sys.argv[2].replace('?','')))
 action = params.get('action')
 url = params.get('url')
 title = params.get('title')
+name = params.get('name')
 image = params.get('image')
 query = params.get('query')
 
@@ -54,7 +48,7 @@ elif action == 'news':
     alphatv.Indexer().news(url)
 
 elif action == 'episodes':
-    alphatv.Indexer().episodes(url, title, image)
+    alphatv.Indexer().episodes(url, title, name, image)
 
 elif action == 'news_episodes':
     alphatv.Indexer().news_episodes(query)
@@ -68,6 +62,9 @@ elif action == 'cache_clear':
 
 elif action == 'selector':
     alphatv.Indexer().selector()
+
+elif action == 'enter_date':
+    alphatv.Indexer().enter_date()
 
 elif action == 'back':
     from tulip.control import execute

@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 
 '''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    Alpha Player Addon
+    Author Twilight0
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    SPDX-License-Identifier: GPL-3.0-only
+    See LICENSES/GPL-3.0-only for more information.
 '''
 
 
-import json, re
-from time import sleep
-from tulip.compat import urljoin, iteritems, parse_qs, urlparse, range
+import json, re, time
+from base64 import b64decode
+from datetime import datetime
+from tulip.compat import urljoin, iteritems, parse_qs, parse_qsl, urlparse, range
 from tulip import bookmarks, directory, client, cache, user_agents, control, youtube, workers
 
 
@@ -34,22 +28,27 @@ class Indexer:
         self.xhr_show_list = ''.join([self.basegr_link, '/ajax/Isobar.AlphaTv.Components.Shows.Show.list'])
         self.seriesgr_link = '?'.join([self.xhr_show_list, 'Key=0&Page=1&PageSize=50&ShowType=1'])
         self.showsgr_link = '?'.join([self.xhr_show_list, 'Key=0&Page=1&PageSize=50&ShowType=0'])
+        self.seriescy_link = ''.join([self.basecy_link, '/shows/ellinikes-seires?page=0'])
+        self.showscy_link_1 = ''.join([self.basecy_link, '/shows/entertainment?page=0'])
+        self.showscy_link_2 = ''.join([self.basecy_link, '/shows/informative?page=0'])
 
-        self.views_ajax = ''.join([self.basecy_link, '/views/ajax'])
+        self.views_ajax = ''.join([self.basecy_link, '/views/ajax?_wrapper_format=drupal_ajax'])
+
+        # CY:
         self.ajax_post_index = '&'.join(
             [
                 'view_name=alpha_shows_category_view', 'view_display_id=page_3', 'view_args=',
                 'view_path=shows', 'view_base_path=shows', 'page={page}', 'pager_element=0'
             ]
         )
+
+        # CY:
         self.ajax_post_episodes = '&'.join(
             [
-                'view_name=webtv', 'view_display_id=block_3', 'view_args={view_args}',
+                'view_name=webtv', 'view_display_id=page_1', 'view_args={view_args}',
                 'view_path={view_path}/webtv', 'view_base_path=shows/%/%/webtv', 'page={page}', 'pager_element=0'
             ]
         )
-
-        self.webtvcy_link = ''.join([self.basecy_link, '/shows'])
 
         self.episodeslist_gr = ''.join([self.basegr_link, '/ajax/Isobar.AlphaTv.Components.Shows.Show.episodeslist'])
         self.episodeslist_gr_query = '?'.join([self.episodeslist_gr, 'Key={year}&Page=1&PageSize={pages}&ShowId={show_id}'])
@@ -59,15 +58,15 @@ class Indexer:
 
         self.newsgr_link = ''.join([self.basegr_link, '/news'])
         self.newsgr_link_ajax = ''.join([self.newsgr_link, '/?pg={page}&$component=NewsSection[0]&articleCategory={category}'])
-        # self.newscy_link = ''.join([self.basecy_link, '/shows/informative/kentrikodeltio/webtv'])
-        self.newscy_link = ''.join([self.basecy_link, '/shows/informative/kentrikodeltio/webtv'])
+
+        self.newscy_link = ''.join([self.basecy_link, '/shows/news/kentrikodeltio/webtv'])
 
         self.live_link_gr = ''.join([self.basegr_link, '/live/'])
-        self.live_link_cy = ''.join([self.basecy_link, '/page/live'])
+        self.live_link_cy = ''.join([self.basecy_link, '/live'])
 
         self.yt_id_gr = 'UCYKe1v03QBPyApJID8CPjPA'
         self.yt_id_cy = 'UCxO8Xtg_dmOxubozdzLw3AA'
-        self.yt_key = 'AIzaSyBOS4uSyd27OU0XV2KSdN3vT2UG_v0g9sI'
+        self.yt_key = b64decode('JZ1Q4wkTrFWTI1mQvFUTPJXWzZzQzlEdON3atIDcwVXQ5NVY6lUQ'[::-1])
 
     def root(self):
 
@@ -100,17 +99,17 @@ class Indexer:
             }
             ,
             {
-                'title': control.lang(32008),
+                'title': control.lang(32015 if control.setting('region') == 'CY' else 32008),
                 'action': 'index',
                 'icon': 'shows.png',
-                'url': 'shows'
+                'url': self.showscy_link_2 if control.setting('region') == 'CY' else self.showsgr_link
             }
             ,
             {
                 'title': control.lang(32002),
                 'action': 'index',
                 'icon': 'series.png',
-                'url': 'series'
+                'url': self.seriescy_link if control.setting('region') == 'CY' else self.seriesgr_link
             }
             ,
             {
@@ -127,17 +126,16 @@ class Indexer:
             }
         ]
 
-        webtv = {
-            'title': control.lang(32012),
+        entertainment = {
+            'title': control.lang(32016),
             'action': 'index',
             'icon': 'shows.png',
-            'url': 'webtv'
+            'url': self.showscy_link_1
         }
 
         if control.setting('region') == 'CY':
 
-            del self.list[3:5]
-            self.list.insert(3, webtv)
+            self.list.insert(-4, entertainment)
 
         for item in self.list:
 
@@ -160,6 +158,7 @@ class Indexer:
 
         if choice != -1:
 
+            cache.clear(withyes=False)
             control.sleep(200)
             control.refresh()
 
@@ -228,42 +227,31 @@ class Indexer:
 
         html = client.request(url)
 
+        items = [i for i in client.parseDOM(html, 'div', attrs={'class': 'box'}) if urlparse(url).path in i]
+
         try:
-            pages = client.parseDOM(html, 'li', attrs={'class': 'pager__item pager__item--last'})[0]
-            pages = int(re.search(r'(\d{1,3})$', client.parseDOM(pages, 'a', ret='href')[0], re.M).group(1))
+            next_link = client.parseDOM(html, 'a', attrs={'class': 'pager__link pager__link--next'}, ret='href')[0]
+            next_link = urljoin(url.partition('?')[0], next_link)
         except Exception:
-            pages = 0
-
-        if pages:
-
-            threads = []
-
-            for i in list(range(0, pages + 1)):
-                threads.append(workers.Thread(self.thread, i, self.views_ajax, self.ajax_post_index.format(page=str(i)), False))
-                self.data.append('')
-            [i.start() for i in threads]
-            [i.join() for i in threads]
-
-            htmls = '\n'.join([json.loads(i)[2]['data'] for i in self.data])
-
-            items = client.parseDOM(htmls, 'li', attrs={'class': 'views-row views-row-.+?'})
-
-        else:
-
-            items = client.parseDOM(html, 'li', attrs={'class': 'views-row views-row-.+?'})
-
-        filters = ['box-office', 'ellinikes-tenies', 'block-series']
-        items = [i for i in items if not any([f for f in filters if f in i])]
+            next_link = None
 
         for item in items:
 
-            title_field = client.parseDOM(item, 'div', attrs={'class': 'views-field-title'})[0]
-            title = client.replaceHTMLCodes(client.parseDOM(title_field, 'a')[0]).replace(u'ᵒ', u' μοίρες')
+            try:
+                title_field = client.parseDOM(item, 'div', {'class': 'box__overlay-title'})[0]
+            except IndexError:
+                continue
+            title = client.replaceHTMLCodes(client.parseDOM(title_field, 'a')[0]).replace(u'ᵒ', u' μοίρες').strip()
+            subtitle = client.replaceHTMLCodes(client.parseDOM(item, 'div', {'class': 'box__overlay-subtitle'})[0])
+            label = ' | '.join([title, subtitle])
             url = client.parseDOM(title_field, 'a', ret='href')[0]
             url = urljoin(self.basecy_link, url + '/webtv')
             image = client.parseDOM(item, 'img', ret='src')[0]
 
-            data = {'title': title, 'image': image, 'url': url}
+            data = {'title': label, 'image': image, 'url': url, 'name': title}
+
+            if next_link:
+                data.update({'next': next_link})
 
             self.list.append(data)
 
@@ -275,12 +263,6 @@ class Indexer:
             self.list = cache.get(self.index_cy, 24, url)
         elif self.basegr_link in url:
             self.list = cache.get(self.index_gr, 24, url)
-        elif url == 'shows':
-            self.list = cache.get(self.index_gr, 24, self.showsgr_link)
-        elif url == 'series':
-            self.list = cache.get(self.index_gr, 24, self.seriesgr_link)
-        elif url == 'webtv':
-            self.list = cache.get(self.index_cy, 24, self.webtvcy_link)
 
         if not self.list:
             return
@@ -288,14 +270,18 @@ class Indexer:
         for i in self.list:
             if 'action' not in i:
                 i.update({'action': 'episodes'})
+            if 'next' in i:
+                i.update({'nextaction': 'index'})
 
         for i in self.list:
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
             i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
-        control.sortmethods('title')
-        control.sortmethods()
+        if self.basegr_link in url:
+
+            control.sortmethods('title')
+            control.sortmethods()
 
         directory.add(self.list, content='videos')
 
@@ -348,59 +334,46 @@ class Indexer:
 
         try:
             title = title.decode('utf-8')
+            title = title.partition('|')[0]
         except Exception:
-            pass
+            title = title.partition('|')[0]
 
-        html = client.request(url)
+        if url.startswith(self.views_ajax):
+
+            html = client.request(url.partition('#')[0], post=url.partition('#')[2])
+            _json = json.loads(html)
+            html = _json[4]['data']
+            view_path = dict(parse_qsl(url.partition('#')[2]))['view_path']
+            view_args = dict(parse_qsl(url.partition('#')[2]))['view_args']
+            page = str(int(dict(parse_qsl(url.partition('#')[2]))['page']) + 1)
+
+        else:
+
+            html = client.request(url)
+            view_path = urlparse(url).path
+            view_args = '/'.join(view_path.split('/')[2:4])
+            page = '1'
+
+        next_link = '#'.join(
+            [self.views_ajax, self.ajax_post_episodes.format(view_args=view_args, view_path=view_path, page=page)]
+        )
 
         try:
 
-            try:
-                pages = client.parseDOM(html, 'li', attrs={'class': 'pager__item pager__item--last'})[0]
-                pages = int(re.search(r'(\d{1,3})$', client.parseDOM(pages, 'a', ret='href')[0], re.M).group(1))
-            except Exception:
-                pages = 0
-
-            if pages:
-
-                view_args = view_path = '/'.join(urlparse(url).path.split('/')[1:-1])
-
-                if 'kentrikodeltio' in url:
-                    view_args = view_args.replace('shows', 'news')
-                elif 'ellinikes-seires' in url:
-                    view_args = view_args.replace('shows', 'episodes')
-
-                threads = []
-
-                for i in list(range(0, pages + 1)):
-
-                    post = self.ajax_post_episodes.format(view_args=view_args, view_path=view_path, page=str(i))
-
-                    threads.append(workers.Thread(self.thread, i, self.views_ajax, post, False))
-                    self.data.append('')
-                [i.start() for i in threads]
-                [i.join() for i in threads]
-
-                htmls = '\n'.join([json.loads(i)[2]['data'] for i in self.data])
-
-                items = client.parseDOM(htmls, 'article')
-
-            else:
-
-                items = client.parseDOM(html, 'article')
+            items = [i for i in client.parseDOM(html, 'div', {'class': 'box'}) if 'play-big' in i]
 
             if not items:
                 raise Exception
 
             for item in items:
 
-                itemtitle = client.parseDOM(item, 'div', attrs={'class': 'itemtitle'})[0]
+                itemtitle = client.parseDOM(item, 'a')[-1]
                 label = ' - '.join([title, itemtitle])
                 url = client.parseDOM(item, 'a', ret='href')[0]
                 url = urljoin(self.basecy_link, url)
                 image = client.parseDOM(item, 'img', ret='src')[0]
 
-                data = {'title': label, 'image': image, 'url': url}
+                data = {'title': label, 'image': image, 'url': url, 'next': next_link, 'name': title}
 
                 self.list.append(data)
 
@@ -424,21 +397,34 @@ class Indexer:
 
         return self.list
 
-    def episodes(self, url, title=None, image=None):
+    def episodes(self, url, title=None, name=None, image=None):
 
         if self.basegr_link in url:
             self.list = cache.get(self.episodes_list_gr, 1, url, title)
         else:
-            self.list = cache.get(self.episodes_list_cy, 1, url, title, image)
+            self.list = cache.get(self.episodes_list_cy, 1, url, name, image)
 
         if self.list is None:
             return
 
+        if self.newscy_link == url:
+            item = {
+                'title': control.lang(32021),
+                'action': 'enter_date',
+                'icon': 'selector.png',
+                'isFolder': 'False', 'isPlayable': 'False',
+                'next': self.list[0]['next']
+            }
+            self.list.insert(0, item)
+
         for c, i in list(enumerate(self.list, 1)):
             if 'action' not in i:
                 i.update({'action': 'play', 'isFolder': 'False', 'code': str(c)})
+            if 'next' in i:
+                i.update({'nextaction': 'episodes'})
 
-        control.sortmethods('production_code')
+        if self.basegr_link in url:
+            control.sortmethods('production_code')
 
         directory.add(self.list, content='videos')
 
@@ -510,16 +496,27 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
-    def play(self, url):
+    def play(self, url, query=None, resolved_mode=True):
 
         if url in [self.live_link_cy, self.live_link_gr]:
             title = 'Alpha'
             icon = control.icon()
+        elif query:
+            title = query
+            icon = control.addonmedia('news.png')
         else:
             title = None
             icon = None
 
-        directory.resolve(self.resolve(url), meta={'title': title}, icon=icon)
+        stream = self.resolve(url)
+        meta = {'title': title}
+        dash = 'm3u8' in stream and control.kodi_version() >= 18.0
+
+        directory.resolve(
+            url=stream, meta=meta, dash=dash, icon=icon,
+            mimetype='application/vnd.apple.mpegurl' if '.m3u8' in stream else None,
+            manifest_type='hls' if '.m3u8' in stream else None, resolved_mode=resolved_mode
+        )
 
     def resolve(self, url):
 
@@ -536,11 +533,11 @@ class Indexer:
 
         elif url == self.live_link_cy:
 
-            url = re.search(r'url: [\'"](.+?\.m3u8.+?)[\'"]', html).group(1)
+            url = re.search(r'hls: [\'"](.+?)[\'"]', html).group(1)
 
         elif 'cloudskep' in html:
 
-            url = re.search(r'url: [\'"](.+?\.mp4.*?)[\'"]', html).group(1)
+            url = client.parseDOM(html, 'a', {'class': 'player-play-inline hidden'}, ret='href')[0]
 
         else:
 
@@ -561,6 +558,21 @@ class Indexer:
 
         return url + user_agents.spoofer(referer=True, ref_str=referer)
 
+    def enter_date(self):
+
+        input_date = control.inputDialog(control.lang(32021), type=control.input_date).replace(' ', '')
+
+        query = ' - '.join(['Alpha News', input_date])
+
+        try:
+            date = datetime.strptime(input_date, '%d/%m/%Y').strftime('%d%m%y')
+        except TypeError:
+            date = datetime(*(time.strptime(input_date, '%d/%m/%Y')[0:6])).strftime('%d%m%y')
+
+        url = ''.join([self.basecy_link, '/shows/news/kentrikodeltio/webtv/kentriko-deltio-{}'.format(date)])
+
+        self.play(url=url, query=query, resolved_mode=False)
+
     def thread(self, i, url, post=None, sleep_=True):
 
         try:
@@ -568,7 +580,7 @@ class Indexer:
             result = client.request(url, post=post)
             self.data[i] = result
             if sleep_:
-                sleep(0.05)
+                time.sleep(0.05)
 
         except:
 
