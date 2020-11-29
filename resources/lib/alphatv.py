@@ -185,13 +185,15 @@ class Indexer:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[int(control.setting('page'))]
+                reset = False
 
             except Exception:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[0]
+                reset = True
 
-            self.list.insert(0, self.page_menu(len(pages)))
+            self.list.insert(0, self.page_menu(len(pages), reset=reset))
 
         directory.add(self.list)
 
@@ -454,13 +456,15 @@ class Indexer:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[int(control.setting('page'))]
+                reset = False
 
             except Exception:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[0]
+                reset = True
 
-            self.list.insert(0, self.page_menu(len(pages)))
+            self.list.insert(0, self.page_menu(len(pages), reset=reset))
 
         if self.basegr_link in url:
             control.sortmethods()
@@ -540,13 +544,15 @@ class Indexer:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[int(control.setting('page'))]
+                reset = False
 
             except Exception:
 
                 pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
                 self.list = pages[0]
+                reset = True
 
-            self.list.insert(0, self.page_menu(len(pages)))
+            self.list.insert(0, self.page_menu(len(pages), reset=reset))
 
         directory.add(self.list, content='videos')
 
@@ -646,10 +652,15 @@ class Indexer:
             return
 
     @staticmethod
-    def page_menu(pages):
+    def page_menu(pages, reset=False):
+
+        if not reset:
+            index = str(int(control.setting('page')) + 1)
+        else:
+            index = '1'
 
         menu = {
-            'title': control.lang(30025).format(str(int(control.setting('page')) + 1)),
+            'title': control.lang(30025).format(index),
             'action': 'switch',
             'query': str(pages),
             'icon': 'selector.png',
@@ -664,7 +675,7 @@ class Indexer:
 
         pages = [control.lang(30026).format(i) for i in list(range(1, int(query) + 1))]
 
-        choice = control.selectDialog(pages, heading=control.lang(30114))
+        choice = control.selectDialog(pages, heading=control.lang(30028))
 
         if choice != -1:
             control.setSetting('page', str(choice))

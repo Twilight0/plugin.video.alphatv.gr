@@ -106,6 +106,10 @@ msgctxt "#30027"
 msgid "Reverse episode order"
 msgstr "Αντιστροφή τρόπου προβολής επεισοδίων"
 
+msgctxt "#30028"
+msgid "Select a page"
+msgstr "Επιλέξτε μία σελίδα"
+
 msgctxt "#30402"
 msgid "Success"
 msgstr "Επιτυχία"

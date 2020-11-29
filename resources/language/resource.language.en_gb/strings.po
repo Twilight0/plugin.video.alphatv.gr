@@ -106,6 +106,10 @@ msgctxt "#30027"
 msgid "Reverse episode order"
 msgstr ""
 
+msgctxt "#30028"
+msgid "Select a page"
+msgstr ""
+
 msgctxt "#30402"
 msgid "Success"
 msgstr ""

@@ -1,3 +1,6 @@
+[B]2.2.1[/B]
+- Tweak pagination function
+
 [B]2.2.0[/B]
 - Add pagination for long lists (# items per page are selectable)
 - Tweaked strings integers
