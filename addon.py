@@ -66,6 +66,9 @@ elif action == 'selector':
 elif action == 'enter_date':
     alphatv.Indexer().enter_date()
 
+elif action == 'switch':
+    alphatv.Indexer().switch(query)
+
 elif action == 'back':
     from tulip.control import execute
     execute('Action(Back)')

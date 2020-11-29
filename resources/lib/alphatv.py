@@ -12,8 +12,9 @@
 import json, re, time
 from base64 import b64decode
 from datetime import datetime
+from kodi_six.utils import py2_decode
 from tulip.compat import urljoin, iteritems, parse_qs, parse_qsl, urlparse, range
-from tulip import bookmarks, directory, client, cache, user_agents, control, youtube, workers
+from tulip import bookmarks, directory, client, cache, user_agents, control, youtube, workers, utils
 
 
 class Indexer:
@@ -66,18 +67,18 @@ class Indexer:
 
         self.yt_id_gr = 'UCYKe1v03QBPyApJID8CPjPA'
         self.yt_id_cy = 'UCxO8Xtg_dmOxubozdzLw3AA'
-        self.yt_key = b64decode('JZ1Q4wkTrFWTI1mQvFUTPJXWzZzQzlEdON3atIDcwVXQ5NVY6lUQ'[::-1])
+        self.yt_key = b64decode('VpGUslWWNVzZtgmd4kDWx8UWmFFSvV1T6p0cWNESkhGR5NVY6lUQ'[::-1])
 
     def root(self):
 
         if control.setting('region') == 'CY':
-            formatter = control.lang(32005)
+            formatter = control.lang(30005)
         else:
-            formatter = control.lang(32004)
+            formatter = control.lang(30004)
 
         self.list = [
             {
-                'title': control.lang(32003).format(formatter),
+                'title': control.lang(30003).format(formatter),
                 'action': 'selector',
                 'icon': 'selector.png',
                 'isFolder': 'False',
@@ -85,7 +86,7 @@ class Indexer:
             }
             ,
             {
-                'title': control.lang(32001),
+                'title': control.lang(30001),
                 'action': 'play',
                 'icon': 'live.png',
                 'url': self.live_link_cy if control.setting('region') == 'CY' else self.live_link_gr,
@@ -93,41 +94,41 @@ class Indexer:
             }
             ,
             {
-                'title': control.lang(32010),
+                'title': control.lang(30010),
                 'action': 'recent',
                 'icon': 'recent.png'
             }
             ,
             {
-                'title': control.lang(32015 if control.setting('region') == 'CY' else 32008),
+                'title': control.lang(30015 if control.setting('region') == 'CY' else 30008),
                 'action': 'index',
                 'icon': 'shows.png',
                 'url': self.showscy_link_2 if control.setting('region') == 'CY' else self.showsgr_link
             }
             ,
             {
-                'title': control.lang(32002),
+                'title': control.lang(30002),
                 'action': 'index',
                 'icon': 'series.png',
                 'url': self.seriescy_link if control.setting('region') == 'CY' else self.seriesgr_link
             }
             ,
             {
-                'title': control.lang(32011),
+                'title': control.lang(30011),
                 'action': 'episodes' if control.setting('region') == 'CY' else 'news',
                 'icon': 'news.png',
                 'url': self.newscy_link if control.setting('region') == 'CY' else self.newsgr_link
             }
             ,
             {
-                'title': control.lang(32009),
+                'title': control.lang(30009),
                 'action': 'bookmarks',
                 'icon': 'bookmarks.png'
             }
         ]
 
         entertainment = {
-            'title': control.lang(32016),
+            'title': control.lang(30016),
             'action': 'index',
             'icon': 'shows.png',
             'url': self.showscy_link_1
@@ -139,7 +140,7 @@ class Indexer:
 
         for item in self.list:
 
-            cache_clear = {'title': 32022, 'query': {'action': 'cache_clear'}}
+            cache_clear = {'title': 30022, 'query': {'action': 'cache_clear'}}
             item.update({'cm': [cache_clear]})
 
         directory.add(self.list, content='videos')
@@ -147,9 +148,9 @@ class Indexer:
     @staticmethod
     def selector():
 
-        choices = [control.lang(32004), control.lang(32005)]
+        choices = [control.lang(30004), control.lang(30005)]
 
-        choice = control.selectDialog(choices, control.lang(32007))
+        choice = control.selectDialog(choices, control.lang(30007))
 
         if choice == 0:
             control.setSetting('region', 'GR')
@@ -175,7 +176,22 @@ class Indexer:
             return
 
         for i in self.list:
-            i.update({'action': 'play', 'isFolder': 'False'})
+
+            i.update({'title': client.replaceHTMLCodes(py2_decode(i['title'])), 'action': 'play', 'isFolder': 'False'})
+
+        if len(self.list) > int(control.setting('pagination_integer')) and control.setting('paginate') == 'true':
+
+            try:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[int(control.setting('page'))]
+
+            except Exception:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[0]
+
+            self.list.insert(0, self.page_menu(len(pages)))
 
         directory.add(self.list)
 
@@ -194,7 +210,7 @@ class Indexer:
 
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['delbookmark'] = i['url']
-            i.update({'cm': [{'title': 32502, 'query': {'action': 'deleteBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30502, 'query': {'action': 'deleteBookmark', 'url': json.dumps(bookmark)}}]})
 
         control.sortmethods('title')
 
@@ -241,6 +257,7 @@ class Indexer:
                 title_field = client.parseDOM(item, 'div', {'class': 'box__overlay-title'})[0]
             except IndexError:
                 continue
+
             title = client.replaceHTMLCodes(client.parseDOM(title_field, 'a')[0]).replace(u'ᵒ', u' μοίρες').strip()
             subtitle = client.replaceHTMLCodes(client.parseDOM(item, 'div', {'class': 'box__overlay-subtitle'})[0])
             label = ' | '.join([title, subtitle])
@@ -276,7 +293,7 @@ class Indexer:
         for i in self.list:
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
         if self.basegr_link in url:
 
@@ -381,14 +398,14 @@ class Indexer:
 
             self.list = [
                 {
-                    'title': u' - '.join([title, control.lang(32014)]),
+                    'title': u' - '.join([title, control.lang(30014)]),
                     'action': 'back',
                     'image': image,
                     'isFolder': 'False', 'isPlayable': 'False'
                 }
                 ,
                 {
-                    'title': control.lang(32013),
+                    'title': control.lang(30013),
                     'action': 'back',
                     'image': control.icon(),
                     'isFolder': 'False', 'isPlayable': 'False'
@@ -408,22 +425,45 @@ class Indexer:
             return
 
         if self.newscy_link == url:
+
             item = {
-                'title': control.lang(32021),
+                'title': control.lang(30021),
                 'action': 'enter_date',
                 'icon': 'selector.png',
                 'isFolder': 'False', 'isPlayable': 'False',
                 'next': self.list[0]['next']
             }
+
             self.list.insert(0, item)
 
         for c, i in list(enumerate(self.list, 1)):
+
             if 'action' not in i:
                 i.update({'action': 'play', 'isFolder': 'False', 'code': str(c)})
+
             if 'next' in i:
                 i.update({'nextaction': 'episodes'})
 
+        if control.setting('reverse') == 'true' and self.basegr_link in url:
+
+            self.list = sorted(self.list, key=lambda k: int(k['code']), reverse=True)
+
+        if len(self.list) > int(control.setting('pagination_integer')) and control.setting('paginate') == 'true':
+
+            try:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[int(control.setting('page'))]
+
+            except Exception:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[0]
+
+            self.list.insert(0, self.page_menu(len(pages)))
+
         if self.basegr_link in url:
+            control.sortmethods()
             control.sortmethods('production_code')
 
         directory.add(self.list, content='videos')
@@ -494,17 +534,36 @@ class Indexer:
         for i in self.list:
             i.update({'action': 'play', 'isFolder': 'False'})
 
+        if len(self.list) > int(control.setting('pagination_integer')) and control.setting('paginate') == 'true':
+
+            try:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[int(control.setting('page'))]
+
+            except Exception:
+
+                pages = utils.list_divider(self.list, int(control.setting('pagination_integer')))
+                self.list = pages[0]
+
+            self.list.insert(0, self.page_menu(len(pages)))
+
         directory.add(self.list, content='videos')
 
     def play(self, url, query=None, resolved_mode=True):
 
         if url in [self.live_link_cy, self.live_link_gr]:
+
             title = 'Alpha'
             icon = control.icon()
+
         elif query:
+
             title = query
             icon = control.addonmedia('news.png')
+
         else:
+
             title = None
             icon = None
 
@@ -560,7 +619,7 @@ class Indexer:
 
     def enter_date(self):
 
-        input_date = control.inputDialog(control.lang(32021), type=control.input_date).replace(' ', '')
+        input_date = control.inputDialog(control.lang(30021), type=control.input_date).replace(' ', '')
 
         query = ' - '.join(['Alpha News', input_date])
 
@@ -585,3 +644,29 @@ class Indexer:
         except:
 
             return
+
+    @staticmethod
+    def page_menu(pages):
+
+        menu = {
+            'title': control.lang(30025).format(str(int(control.setting('page')) + 1)),
+            'action': 'switch',
+            'query': str(pages),
+            'icon': 'selector.png',
+            'isFolder': 'False',
+            'isPlayable': 'False'
+        }
+
+        return menu
+
+    @staticmethod
+    def switch(query):
+
+        pages = [control.lang(30026).format(i) for i in list(range(1, int(query) + 1))]
+
+        choice = control.selectDialog(pages, heading=control.lang(30114))
+
+        if choice != -1:
+            control.setSetting('page', str(choice))
+            control.sleep(200)
+            control.refresh()
