@@ -1,3 +1,6 @@
+[B]2.2.2[/B]
+- Fix Alpha CY vod resolver
+
 [B]2.2.1[/B]
 - Tweak pagination function
 

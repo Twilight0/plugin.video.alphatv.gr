@@ -603,6 +603,9 @@ class Indexer:
         elif 'cloudskep' in html:
 
             url = client.parseDOM(html, 'a', {'class': 'player-play-inline hidden'}, ret='href')[0]
+            signature = client.parseDOM(html, 'footer', {'class': 'footer'}, ret='player-signature')
+            if signature:
+                url = '?wmsAuthSign='.join([url, signature[0]])
 
         else:
 
