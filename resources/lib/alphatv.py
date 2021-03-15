@@ -13,8 +13,10 @@ import json, re, time
 from base64 import b64decode
 from datetime import datetime
 from kodi_six.utils import py2_decode
-from tulip.compat import urljoin, iteritems, parse_qs, parse_qsl, urlparse, range
+from tulip.compat import urljoin, iteritems, parse_qs, parse_qsl, urlparse, range, py3_dec
 from tulip import bookmarks, directory, client, cache, user_agents, control, youtube, workers, utils
+
+function_cache = cache.FunctionCache()
 
 
 class Indexer:
@@ -67,7 +69,7 @@ class Indexer:
 
         self.yt_id_gr = 'UCYKe1v03QBPyApJID8CPjPA'
         self.yt_id_cy = 'UCxO8Xtg_dmOxubozdzLw3AA'
-        self.yt_key = b64decode('VpGUslWWNVzZtgmd4kDWx8UWmFFSvV1T6p0cWNESkhGR5NVY6lUQ'[::-1])
+        self.yt_key = py3_dec(b64decode('VpGUslWWNVzZtgmd4kDWx8UWmFFSvV1T6p0cWNESkhGR5NVY6lUQ'[::-1]))
 
     def root(self):
 
@@ -163,6 +165,11 @@ class Indexer:
             control.sleep(200)
             control.refresh()
 
+    @function_cache.cache_method(2)
+    def yt_videos(self, url):
+        
+        return youtube.youtube(key=self.yt_key).videos(url)
+
     def recent(self):
 
         if control.setting('region') == 'CY':
@@ -170,7 +177,7 @@ class Indexer:
         else:
             url = self.yt_id_gr
 
-        self.list = cache.get(youtube.youtube(key=self.yt_key).videos, 2, url)
+        self.list = self.yt_videos(url)
 
         if self.list is None:
             return
@@ -218,6 +225,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @function_cache.cache_method(24)
     def index_gr(self, url):
 
         html = client.request(url)
@@ -241,6 +249,7 @@ class Indexer:
 
         return self.list
 
+    @function_cache.cache_method(24)
     def index_cy(self, url):
 
         html = client.request(url)
@@ -279,9 +288,9 @@ class Indexer:
     def index(self, url):
 
         if self.basecy_link in url:
-            self.list = cache.get(self.index_cy, 24, url)
+            self.list = self.index_cy(url)
         elif self.basegr_link in url:
-            self.list = cache.get(self.index_gr, 24, url)
+            self.list = self.index_gr(url)
 
         if not self.list:
             return
@@ -304,6 +313,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @function_cache.cache_method(1)
     def episodes_list_gr(self, url, title):
 
         html = client.request(url)
@@ -349,6 +359,7 @@ class Indexer:
 
         return self.list
 
+    @function_cache.cache_method(1)
     def episodes_list_cy(self, url, title, image):
 
         try:
@@ -419,9 +430,9 @@ class Indexer:
     def episodes(self, url, title=None, name=None, image=None):
 
         if self.basegr_link in url:
-            self.list = cache.get(self.episodes_list_gr, 1, url, title)
+            self.list = self.episodes_list_gr(url, title)
         else:
-            self.list = cache.get(self.episodes_list_cy, 1, url, name, image)
+            self.list = self.episodes_list_cy(url, name, image)
 
         if self.list is None:
             return
@@ -472,6 +483,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @function_cache.cache_method(48)
     def news_index(self, url):
 
         html = client.request(url)
@@ -492,7 +504,7 @@ class Indexer:
 
     def news(self, url):
 
-        self.list = cache.get(self.news_index, 48, url)
+        self.list = self.news_index(url)
 
         if self.list is None:
             return
@@ -502,6 +514,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @function_cache.cache_method(1)
     def news_episodes_listing(self, query):
 
         threads = []
@@ -530,7 +543,7 @@ class Indexer:
 
     def news_episodes(self, query):
 
-        self.list = cache.get(self.news_episodes_listing, 1, query)
+        self.list = self.news_episodes_listing(query)
 
         if self.list is None:
             return

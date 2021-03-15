@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.alphatv.gr" version="2.2.2" name="ALPHA Player" provider-name="Twilight0">
+<addon id="plugin.video.alphatv.gr" version="2.3.0" name="ALPHA Player" provider-name="Twilight0">
 	<requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.tulip" version="2.8.1" />
@@ -19,7 +19,11 @@
 		<source>https://github.com/Twilight0/plugin.video.alphatv.gr</source>
 		<website>http://www.alphatv.gr/</website>
         <size>598620</size>
-		<news>[B]2.2.2[/B]
+		<news>[B]2.3.0[/B]
+- Utilize function cache instead of traditional get
+- Make youtube API key as text type instead of bytes for Kodi 19+
+
+[B]2.2.2[/B]
 - Fix Alpha CY vod resolver
 
 [B]2.2.1[/B]
