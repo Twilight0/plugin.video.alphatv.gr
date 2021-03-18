@@ -1,3 +1,6 @@
+[B]2.3.1[/B]
+- Revert of the function cache back to traditional get
+
 [B]2.3.0[/B]
 - Utilize function cache instead of traditional get
 - Make youtube API key as text type instead of bytes for Kodi 19+
