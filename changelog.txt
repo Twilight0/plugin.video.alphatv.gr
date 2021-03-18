@@ -1,3 +1,6 @@
+[B]2.3.2[/B]
+- Bug fix
+
 [B]2.3.1[/B]
 - Revert of the function cache back to traditional get
 
