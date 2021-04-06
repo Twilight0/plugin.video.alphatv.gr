@@ -57,8 +57,8 @@ elif action == 'play':
     alphatv.Indexer().play(url)
 
 elif action == 'cache_clear':
-    from tulip.cache import clear
-    clear(withyes=False)
+    from tulip.cache import FunctionCache
+    FunctionCache().reset_cache(notify=True)
 
 elif action == 'selector':
     alphatv.Indexer().selector()

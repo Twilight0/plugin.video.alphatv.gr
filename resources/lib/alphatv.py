@@ -14,6 +14,10 @@ from datetime import datetime
 from kodi_six.utils import py2_decode
 from tulip.compat import urljoin, iteritems, parse_qs, parse_qsl, urlparse, range
 from tulip import bookmarks, directory, client, cache, user_agents, control, youtube, workers, utils
+from youtube_resolver import resolve as yt_resolver
+
+
+cache_method = cache.FunctionCache().cache_method
 
 
 class Indexer:
@@ -158,7 +162,7 @@ class Indexer:
 
         if choice != -1:
 
-            cache.clear(withyes=False)
+            cache.FunctionCache().reset_cache()
             control.sleep(200)
             control.refresh()
 
@@ -169,7 +173,7 @@ class Indexer:
         else:
             url = self.yt_id_gr
 
-        self.list = cache.get(youtube.youtube(key=self.yt_key).videos, 2, url)
+        self.list = self.yt_videos(url)
 
         if self.list is None:
             return
@@ -217,6 +221,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @cache_method(1440)
     def index_gr(self, url):
 
         html = client.request(url)
@@ -240,6 +245,7 @@ class Indexer:
 
         return self.list
 
+    @cache_method(1440)
     def index_cy(self, url):
 
         html = client.request(url)
@@ -278,9 +284,9 @@ class Indexer:
     def index(self, url):
 
         if self.basecy_link in url:
-            self.list = cache.get(self.index_cy, 24, url)
+            self.list = self.index_cy(url)
         elif self.basegr_link in url:
-            self.list = cache.get(self.index_gr, 24, url)
+            self.list = self.index_gr(url)
 
         if not self.list:
             return
@@ -303,6 +309,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @cache_method(60)
     def episodes_list_gr(self, url, title):
 
         html = client.request(url)
@@ -350,13 +357,15 @@ class Indexer:
 
         return self.list
 
+    @cache_method(60)
     def episodes_list_cy(self, url, title, image):
 
-        try:
-            title = title.decode('utf-8')
-            title = title.partition('|')[0]
-        except Exception:
-            title = title.partition('|')[0]
+        if title:
+            try:
+                title = title.decode('utf-8')
+                title = title.partition('|')[0]
+            except Exception:
+                title = title.partition('|')[0]
 
         if url.startswith(self.views_ajax):
 
@@ -386,14 +395,19 @@ class Indexer:
                 raise Exception
 
             for item in items:
-
                 itemtitle = client.parseDOM(item, 'a')[-1]
-                label = ' - '.join([title, itemtitle])
+                if title:
+                    label = ' - '.join([title, itemtitle])
+                else:
+                    label = itemtitle
                 url = client.parseDOM(item, 'a', ret='href')[0]
                 url = urljoin(self.basecy_link, url)
                 image = client.parseDOM(item, 'img', ret='src')[0]
 
-                data = {'title': label, 'image': image, 'url': url, 'next': next_link, 'name': title}
+                data = {'title': label, 'image': image, 'url': url, 'next': next_link}
+
+                if title:
+                    data.update({'name': title})
 
                 self.list.append(data)
 
@@ -420,9 +434,9 @@ class Indexer:
     def episodes(self, url, title=None, name=None, image=None):
 
         if self.basegr_link in url:
-            self.list = cache.get(self.episodes_list_gr, 1, url, title)
+            self.list = self.episodes_list_gr(url, title)
         else:
-            self.list = cache.get(self.episodes_list_cy, 1, url, name, image)
+            self.list = self.episodes_list_cy(url, name, image)
 
         if self.list is None:
             return
@@ -473,6 +487,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @cache_method(2880)
     def news_index(self, url):
 
         html = client.request(url)
@@ -493,7 +508,7 @@ class Indexer:
 
     def news(self, url):
 
-        self.list = cache.get(self.news_index, 48, url)
+        self.list = self.news_index(url)
 
         if self.list is None:
             return
@@ -503,6 +518,7 @@ class Indexer:
 
         directory.add(self.list, content='videos')
 
+    @cache_method(60)
     def news_episodes_listing(self, query):
 
         threads = []
@@ -531,7 +547,7 @@ class Indexer:
 
     def news_episodes(self, query):
 
-        self.list = cache.get(self.news_episodes_listing, 1, query)
+        self.list = self.news_episodes_listing(query)
 
         if self.list is None:
             return
@@ -625,6 +641,10 @@ class Indexer:
 
             url = json.loads(client.replaceHTMLCodes(object_))['Url']
 
+            if len(url) == 11:
+
+                return self.yt_session(url)
+
         return url + user_agents.spoofer(referer=True, ref_str=referer)
 
     def enter_date(self):
@@ -685,3 +705,25 @@ class Indexer:
             control.setSetting('page', str(choice))
             control.sleep(200)
             control.refresh()
+
+    @cache_method(60)
+    def yt_videos(self, url):
+
+        return youtube.youtube(key=self.yt_key).videos(url)
+
+    @staticmethod
+    def yt_session(yt_id):
+
+        streams = yt_resolver(yt_id)
+
+        try:
+            addon_enabled = control.addon_details('inputstream.adaptive').get('enabled')
+        except KeyError:
+            addon_enabled = False
+
+        if not addon_enabled:
+            streams = [s for s in streams if 'mpd' not in s['title'].lower()]
+
+        stream = streams[0]['url']
+
+        return stream
